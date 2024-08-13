@@ -1,6 +1,8 @@
 from flask import request
 from flask_restful import Resource
 from marshmallow import ValidationError
+from bson import ObjectId
+from bson.errors import InvalidId
 from app.models.user import User
 from app.schemas.user import UserSchema
 from app.utils.password_utils import hash_password
@@ -27,13 +29,21 @@ class UserListResource(Resource):
 
 class UserResource(Resource):
     def get(self, user_id):
-        user = User.objects(id=user_id).first()
+        try:
+            user = User.objects(id=ObjectId(user_id)).first()
+        except InvalidId:
+            return {'message': 'Invalid user ID'}, 400
+
         if not user:
             return {'message': 'User not found'}, 404
         return user_schema.dump(user), 200
 
     def put(self, user_id):
-        user = User.objects(id=user_id).first()
+        try:
+            user = User.objects(id=ObjectId(user_id)).first()
+        except InvalidId:
+            return {'message': 'Invalid user ID'}, 400
+
         if not user:
             return {'message': 'User not found'}, 404
 
@@ -50,7 +60,11 @@ class UserResource(Resource):
         return user_schema.dump(user), 200
 
     def delete(self, user_id):
-        user = User.objects(id=user_id).first()
+        try:
+            user = User.objects(id=ObjectId(user_id)).first()
+        except InvalidId:
+            return {'message': 'Invalid user ID'}, 400
+
         if not user:
             return {'message': 'User not found'}, 404
 

@@ -2,7 +2,9 @@ version: '3.8'
 
 services:
   web:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     ports:
       - "5000:5000"
     environment:
@@ -18,7 +20,9 @@ services:
       - mongodb_data:/data/db
 
   test:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     command: python -m unittest discover tests
     environment:
       - MONGODB_URI=mongodb://mongodb:27017/test_db

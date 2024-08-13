@@ -1,4 +1,5 @@
 import unittest
+from bson import ObjectId
 from app import create_app, db
 from app.models.user import User
 
@@ -7,7 +8,7 @@ class UserResourceTest(unittest.TestCase):
         self.app = create_app()
         self.app.config['TESTING'] = True
         self.app.config['MONGODB_SETTINGS'] = {
-            'host': 'mongodb://localhost:27017/test_db'
+            'host': 'mongodb://mongodb:27017/test_db'
         }
         self.client = self.app.test_client()
         self.ctx = self.app.app_context()
@@ -70,17 +71,25 @@ class UserResourceTest(unittest.TestCase):
         self.assertIn('errors', response.json)
 
     def test_get_nonexistent_user(self):
-        response = self.client.get('/users/nonexistent_id')
+        nonexistent_id = str(ObjectId())
+        response = self.client.get(f'/users/{nonexistent_id}')
         self.assertEqual(response.status_code, 404)
 
     def test_update_nonexistent_user(self):
+        nonexistent_id = str(ObjectId())
         update_data = {'name': 'New Name'}
-        response = self.client.put('/users/nonexistent_id', json=update_data)
+        response = self.client.put(f'/users/{nonexistent_id}', json=update_data)
         self.assertEqual(response.status_code, 404)
 
     def test_delete_nonexistent_user(self):
-        response = self.client.delete('/users/nonexistent_id')
+        nonexistent_id = str(ObjectId())
+        response = self.client.delete(f'/users/{nonexistent_id}')
         self.assertEqual(response.status_code, 404)
+
+    def test_invalid_user_id(self):
+        response = self.client.get('/users/invalid_id')
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json['message'], 'Invalid user ID')
 
 if __name__ == '__main__':
     unittest.main()
